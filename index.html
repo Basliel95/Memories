@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Web App</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        .upload-section { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .bas { background-color: #007BFF; color: white; }
+        .mel { background-color: #FF69B4; color: white; }
+        .image-grid { display: flex; flex-wrap: wrap; justify-content: space-around; }
+        .image-item { position: relative; margin: 5px; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; cursor: pointer; }
+        .screenshot-btn { margin-top: 20px; padding: 10px 15px; background: green; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Happy 1 Year Anniversary My Love</h2>
+        
+        <h3>Who are you?</h3>
+        <select id="userSelection">
+            <option value="bas">Bas</option>
+            <option value="mel">Mel</option>
+            <option value="spectator">Spectator</option>
+        </select>
+        <button onclick="setUser()">Confirm</button>
+
+        <h3>Upload Background Image</h3>
+        <input type="file" id="bgUpload" onchange="uploadBackground()">
+
+        <div id="uploadSections">
+            <div class="upload-section bas" id="basSection">
+                <h3>Bas's Picks</h3>
+                <input type="file" id="basUpload" onchange="uploadImage('bas')">
+                <div class="image-grid" id="basGallery"></div>
+            </div>
+
+            <div class="upload-section mel" id="melSection">
+                <h3>Mel's Picks</h3>
+                <input type="file" id="melUpload" onchange="uploadImage('mel')">
+                <div class="image-grid" id="melGallery"></div>
+            </div>
+        </div>
+
+        <button class="screenshot-btn" onclick="takeScreenshot()">Save Final Image</button>
+    </div>
+
+    <script>
+        let userType = "";
+
+        function setUser() {
+            userType = document.getElementById("userSelection").value;
+            document.getElementById("basSection").style.display = (userType === "bas") ? "block" : "none";
+            document.getElementById("melSection").style.display = (userType === "mel") ? "block" : "none";
+        }
+
+        function uploadImage(user) {
+            let fileInput = (user === "bas") ? document.getElementById("basUpload") : document.getElementById("melUpload");
+            let file = fileInput.files[0];
+            let formData = new FormData();
+            formData.append("image", file);
+            formData.append("key", "YOUR_IMGBB_API_KEY");
+
+            fetch("https://api.imgbb.com/1/upload", { method: "POST", body: formData })
+            .then(res => res.json())
+            .then(data => {
+                let imgURL = data.data.url;
+                fetch("/save-image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ user, imgURL }) });
+                let gallery = (user === "bas") ? document.getElementById("basGallery") : document.getElementById("melGallery");
+                let imgElement = document.createElement("img");
+                imgElement.src = imgURL;
+                imgElement.style.width = "100px";
+                gallery.appendChild(imgElement);
+            });
+        }
+
+        function takeScreenshot() {
+            alert("Screenshot feature coming soon!");
+        }
+    </script>
+
+</body>
+</html>
